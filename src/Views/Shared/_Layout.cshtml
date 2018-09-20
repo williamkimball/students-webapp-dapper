@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Workforce</title>
+    <title>@ViewData["Title"] - NSS Student Exercises</title>
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -26,13 +26,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Workforce</a>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">NSS Student Exercises</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li><a asp-area="" asp-controller="Student" asp-action="Index">Students</a></li>
+                    <li><a asp-area="" asp-controller="Exercise" asp-action="Index">Exercises</a></li>
+                    <li><a asp-area="" asp-controller="Instructor" asp-action="Index">Instructors</a></li>
                 </ul>
             </div>
         </div>
@@ -44,7 +44,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2018 - Workforce</p>
+            <p>&copy; 2018 - NSS Student Exercises</p>
         </footer>
     </div>
 

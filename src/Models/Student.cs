@@ -7,10 +7,18 @@ namespace Workforce.Models
     public class Student
     {
         public int Id { get; set; }
+
+        [Display(Name="First name")]
         public string FirstName { get; set; }
+
+        [Display(Name="Last name")]
         public string LastName { get; set; }
+
+        [Display(Name="Slack handle")]
         public string SlackHandle { get; set; }
+
         public int CohortId { get; set; }
+
         public Cohort Cohort { get; set; }
 
         [Display(Name="Student Name")]

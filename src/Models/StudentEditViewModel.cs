@@ -21,15 +21,15 @@ namespace Workforce.Models.ViewModels
         public StudentEditViewModel() {}
         public StudentEditViewModel(IDbConnection conn)
         {
-            string sql = $@"SELECT CohortId, CohortName FROM Cohort";
+            string sql = $@"SELECT Id, Name FROM Cohort";
 
             using (conn) {
                 List<Cohort> cohorts = (conn.Query<Cohort> (sql)).ToList();
 
                 this.Cohorts = cohorts
                     .Select(li => new SelectListItem {
-                        Text = li.CohortName,
-                        Value = li.CohortId.ToString()
+                        Text = li.Name,
+                        Value = li.Id.ToString()
                     }).ToList();
             }
 

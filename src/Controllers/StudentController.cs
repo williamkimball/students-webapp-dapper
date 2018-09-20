@@ -29,16 +29,16 @@ namespace Workforce.Controllers {
         public async Task<IActionResult> Index () {
 
             string sql = @"
-                select
-                    s.Id,
-                    s.FirstName,
-                    s.LastName,
-                    s.SlackHandle,
-                    c.CohortId,
-                    c.CohortName
-                from Student s
-                join Cohort c on s.CohortId = c.CohortId
-            ";
+            select
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                s.SlackHandle,
+                c.Id,
+                c.Name
+            from Student s
+            join Cohort c on s.CohortId = c.Id
+        ";
 
             using (IDbConnection conn = Connection) {
                 Dictionary<int, Student> students = new Dictionary<int, Student> ();
@@ -51,11 +51,36 @@ namespace Workforce.Controllers {
                             }
                             students[student.Id].Cohort = cohort;
                             return student;
-                        },
-                        splitOn:"CohortId"
+                        }
                     );
-                return View(students.Values);
+                return View (students.Values);
 
+            }
+        }
+
+        public async Task<IActionResult> Details (int? id) {
+            if (id == null) {
+                return NotFound ();
+            }
+
+            string sql = $@"
+            select
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                s.SlackHandle
+            from Student s
+            WHERE s.Id = {id}";
+
+            using (IDbConnection conn = Connection) {
+
+                Student student = (await conn.QueryAsync<Student> (sql)).ToList ().Single ();
+
+                if (student == null) {
+                    return NotFound ();
+                }
+
+                return View (student);
             }
         }
 
@@ -65,31 +90,30 @@ namespace Workforce.Controllers {
             }
 
             string sql = $@"
-                select
-                    s.Id,
-                    s.FirstName,
-                    s.LastName,
-                    s.SlackHandle,
-                    c.CohortId,
-                    c.CohortName
-                from Student s
-                join Cohort c on s.CohortId = c.CohortId
-                WHERE s.Id = {id}";
-
+            select
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                s.SlackHandle,
+                s.CohortId,
+                c.Id,
+                c.Name
+            from Student s
+            join Cohort c on s.CohortId = c.Id
+            WHERE s.Id = {id}";
 
             using (IDbConnection conn = Connection) {
-                StudentEditViewModel model = new StudentEditViewModel(conn);
+                StudentEditViewModel model = new StudentEditViewModel (conn);
 
                 model.Student = (await conn.QueryAsync<Student, Cohort, Student> (
                     sql,
-                    (s, c) => {
-                        s.Cohort = c;
-                        return s;
-                    },
-                    splitOn: "CohortId"
-                )).Single();
+                    (student, cohort) => {
+                        student.Cohort = cohort;
+                        return student;
+                    }
+                )).Single ();
 
-                return View(model);
+                return View (model);
             }
 
         }
@@ -103,12 +127,12 @@ namespace Workforce.Controllers {
 
             if (ModelState.IsValid) {
                 string sql = $@"
-                    UPDATE Student
-                    SET FirstName = '{model.Student.FirstName}',
-                        LastName = '{model.Student.LastName}',
-                        SlackHandle = '{model.Student.SlackHandle}',
-                        CohortId = {model.Student.CohortId}
-                    WHERE Id = {id}";
+                UPDATE Student
+                SET FirstName = '{model.Student.FirstName}',
+                    LastName = '{model.Student.LastName}',
+                    SlackHandle = '{model.Student.SlackHandle}',
+                    CohortId = {model.Student.CohortId}
+                WHERE Id = {id}";
 
                 using (IDbConnection conn = Connection) {
                     int rowsAffected = await conn.ExecuteAsync (sql);
@@ -123,14 +147,45 @@ namespace Workforce.Controllers {
 
         }
 
-        public IActionResult Contact () {
-            ViewData["Message"] = "Your contact page.";
+        public async Task<IActionResult> DeleteConfirm (int? id) {
+            if (id == null) {
+                return NotFound ();
+            }
 
-            return View ();
+            string sql = $@"
+            select
+                s.Id,
+                s.FirstName,
+                s.LastName,
+                s.SlackHandle
+            from Student s
+            WHERE s.Id = {id}";
+
+            using (IDbConnection conn = Connection) {
+
+                Student student = (await conn.QueryAsync<Student> (sql)).ToList ().Single ();
+
+                if (student == null) {
+                    return NotFound ();
+                }
+
+                return View (student);
+            }
         }
 
-        public IActionResult Privacy () {
-            return View ();
+        [HttpPost, ActionName ("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed (int id) {
+
+            string sql = $@"DELETE FROM Student WHERE Id = {id}";
+
+            using (IDbConnection conn = Connection) {
+                int rowsAffected = await conn.ExecuteAsync (sql);
+                if (rowsAffected > 0) {
+                    return RedirectToAction (nameof (Index));
+                }
+                throw new Exception ("No rows affected");
+            }
         }
 
         [ResponseCache (Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

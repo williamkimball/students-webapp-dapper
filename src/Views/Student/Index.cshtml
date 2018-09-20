@@ -28,12 +28,12 @@
                 @Html.DisplayFor(modelItem => student.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => student.Cohort.CohortName)
+                @Html.DisplayFor(modelItem => student.Cohort.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@student.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@student.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@student.Id">Delete</a>
+                <a asp-action="DeleteConfirm" asp-route-id="@student.Id">Delete</a>
             </td>
         </tr>
         }
