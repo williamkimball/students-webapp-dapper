@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Workforce.Models;
-using Workforce.Models;
+
 
 namespace Workforce.Controllers {
     public class ExerciseController : Controller {
@@ -74,21 +74,6 @@ namespace Workforce.Controllers {
                 return new StatusCodeResult(StatusCodes.Status406NotAcceptable);
             }
 
-        }
-
-        public IActionResult Contact () {
-            ViewData["Message"] = "Your contact page.";
-
-            return View ();
-        }
-
-        public IActionResult Privacy () {
-            return View ();
-        }
-
-        [ResponseCache (Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error () {
-            return View (new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
