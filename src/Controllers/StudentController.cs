@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Workforce.Models;
@@ -84,23 +85,82 @@ namespace Workforce.Controllers {
             }
         }
 
+        private async Task<SelectList> CohortList (int? selected) {
+            using (IDbConnection conn = Connection) {
+                // Get all cohort data
+                List<Cohort> cohorts = (await conn.QueryAsync<Cohort> ("SELECT Id, Name FROM Cohort")).ToList();
+
+                // Add a prompting cohort for dropdown
+                cohorts.Insert(0, new Cohort() { Id=0, Name="Select cohort..."});
+
+                // Generate SelectList from cohorts
+                var selectList = new SelectList(cohorts, "Id", "Name", selected);
+                return selectList;
+            }
+        }
+
+        public async Task<IActionResult> Create () {
+            using (IDbConnection conn = Connection) {
+                ViewData["CohortId"] = await CohortList(null);
+                return View ();
+            }
+        }
+
+        // POST: Employee/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
+        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create (Student student) {
+
+            if (ModelState.IsValid) {
+                string sql = $@"
+                    INSERT INTO Student
+                        ( Id, FirstName, LastName, SlackHandle, CohortId )
+                        VALUES
+                        ( null
+                            , '{student.FirstName}'
+                            , '{student.LastName}'
+                            , '{student.SlackHandle}'
+                            , {student.CohortId}
+                        )
+                    ";
+
+                using (IDbConnection conn = Connection) {
+                    int rowsAffected = await conn.ExecuteAsync (sql);
+
+                    if (rowsAffected > 0) {
+                        return RedirectToAction (nameof (Index));
+                    }
+                }
+            }
+
+            // ModelState was invalid, or saving the Student data failed. Show the form again.
+            using (IDbConnection conn = Connection) {
+                IEnumerable<Cohort> cohorts = (await conn.QueryAsync<Cohort> ("SELECT Id, Name FROM Cohort")).ToList ();
+                // ViewData["CohortId"] = new SelectList (cohorts, "Id", "Name", student.CohortId);
+                ViewData["CohortId"] = await CohortList(student.CohortId);
+                return View (student);
+            }
+        }
+
         public async Task<IActionResult> Edit (int? id) {
             if (id == null) {
                 return NotFound ();
             }
 
             string sql = $@"
-            select
-                s.Id,
-                s.FirstName,
-                s.LastName,
-                s.SlackHandle,
-                s.CohortId,
-                c.Id,
-                c.Name
-            from Student s
-            join Cohort c on s.CohortId = c.Id
-            WHERE s.Id = {id}";
+                SELECT
+                    s.Id,
+                    s.FirstName,
+                    s.LastName,
+                    s.SlackHandle,
+                    s.CohortId,
+                    c.Id,
+                    c.Name
+                FROM Student s
+                JOIN Cohort c on s.CohortId = c.Id
+                WHERE s.Id = {id}";
 
             using (IDbConnection conn = Connection) {
                 StudentEditViewModel model = new StudentEditViewModel (conn);
@@ -115,7 +175,6 @@ namespace Workforce.Controllers {
 
                 return View (model);
             }
-
         }
 
         [HttpPost]
@@ -144,7 +203,6 @@ namespace Workforce.Controllers {
             } else {
                 return new StatusCodeResult (StatusCodes.Status406NotAcceptable);
             }
-
         }
 
         public async Task<IActionResult> DeleteConfirm (int? id) {
@@ -153,13 +211,13 @@ namespace Workforce.Controllers {
             }
 
             string sql = $@"
-            select
-                s.Id,
-                s.FirstName,
-                s.LastName,
-                s.SlackHandle
-            from Student s
-            WHERE s.Id = {id}";
+                select
+                    s.Id,
+                    s.FirstName,
+                    s.LastName,
+                    s.SlackHandle
+                from Student s
+                WHERE s.Id = {id}";
 
             using (IDbConnection conn = Connection) {
 
