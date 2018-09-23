@@ -11,7 +11,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Workforce.Models;
 
-
 namespace Workforce.Controllers {
     public class ExerciseController : Controller {
         private readonly IConfiguration _config;
@@ -35,17 +34,31 @@ namespace Workforce.Controllers {
             }
         }
 
-        public async Task<IActionResult> Edit (int? id) {
-            if (id == null) {
-                return NotFound ();
+        public IActionResult Create () {
+            return View ();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create ([Bind ("ExerciseId, Name, Language")] Exercise exercise) {
+            if (ModelState.IsValid) {
+                string sql = $@"
+                    INSERT INTO Exercise
+                        ( Id, Name, Language )
+                        VALUES
+                        ( null, '{exercise.Name}', '{exercise.Language}' )
+                    ";
+
+                using (IDbConnection conn = Connection) {
+                    int rowsAffected = await conn.ExecuteAsync (sql);
+
+                    if (rowsAffected > 0) {
+                        return RedirectToAction (nameof (Index));
+                    }
+                }
             }
 
-            string sql = $"SELECT Id, Name, Language FROM Exercise WHERE Id = {id}";
-
-            using (IDbConnection conn = Connection) {
-                Exercise exercise = (await conn.QueryAsync<Exercise> (sql)).Single ();
-                return View (exercise);
-            }
+            return View (exercise);
         }
 
         [HttpPost]
@@ -71,9 +84,45 @@ namespace Workforce.Controllers {
                 }
 
             } else {
-                return new StatusCodeResult(StatusCodes.Status406NotAcceptable);
+                return new StatusCodeResult (StatusCodes.Status406NotAcceptable);
+            }
+        }
+
+        public async Task<IActionResult> DeleteConfirm (int? id) {
+            if (id == null) {
+                return NotFound ();
             }
 
+            string sql = $@"
+                select
+                    e.Id,
+                    e.Name,
+                    e.Language
+                from Exercise e
+                WHERE e.Id = {id}";
+
+            using (IDbConnection conn = Connection) {
+                Exercise exercise = await conn.QueryFirstAsync<Exercise> (sql);
+
+                if (exercise == null) return NotFound ();
+
+                return View (exercise);
+            }
+        }
+
+        [HttpPost, ActionName ("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed (int id) {
+
+            string sql = $@"DELETE FROM Exercise WHERE Id = {id}";
+
+            using (IDbConnection conn = Connection) {
+                int rowsAffected = await conn.ExecuteAsync (sql);
+                if (rowsAffected > 0) {
+                    return RedirectToAction (nameof (Index));
+                }
+                throw new Exception ("No rows affected");
+            }
         }
     }
 }
