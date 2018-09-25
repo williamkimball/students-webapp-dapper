@@ -144,6 +144,7 @@ namespace Workforce.Controllers {
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit (int? id) {
             if (id == null) {
                 return NotFound ();
@@ -163,7 +164,7 @@ namespace Workforce.Controllers {
                 WHERE s.Id = {id}";
 
             using (IDbConnection conn = Connection) {
-                StudentEditViewModel model = new StudentEditViewModel (conn);
+                StudentEditViewModel model = new StudentEditViewModel(_config);
 
                 model.Student = (await conn.QueryAsync<Student, Cohort, Student> (
                     sql,

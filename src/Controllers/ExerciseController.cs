@@ -34,6 +34,34 @@ namespace Workforce.Controllers {
             }
         }
 
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            string sql = $@"
+            SELECT
+                e.Id,
+                e.Name,
+                e.Language
+            FROM Exercise e
+            WHERE e.Id = {id}";
+
+            using (IDbConnection conn = Connection)
+            {
+                Exercise exercise = await conn.QuerySingleAsync<Exercise>(sql);
+
+                if (exercise == null) {
+                    return NotFound();
+                }
+
+                return View(exercise);
+            }
+        }
+
+
         public IActionResult Create () {
             return View ();
         }
@@ -63,7 +91,10 @@ namespace Workforce.Controllers {
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit ([FromRoute] int id, [Bind ("Id,Name,Language")] Exercise exercise) {
+        public async Task<IActionResult> Edit (
+            [FromRoute] int id,
+            [Bind ("Id,Name,Language")] Exercise exercise
+        ) {
             if (id != exercise.Id) {
                 return NotFound ();
             }
@@ -94,11 +125,11 @@ namespace Workforce.Controllers {
             }
 
             string sql = $@"
-                select
+                SELECT
                     e.Id,
                     e.Name,
                     e.Language
-                from Exercise e
+                FROM Exercise e
                 WHERE e.Id = {id}";
 
             using (IDbConnection conn = Connection) {

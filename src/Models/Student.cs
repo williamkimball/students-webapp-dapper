@@ -18,6 +18,7 @@ namespace Workforce.Models
 
         [Required]
         [Display(Name="Slack handle")]
+        [MaxLength(20)]
         public string SlackHandle { get; set; }
 
         [Required]

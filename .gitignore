@@ -9,3 +9,5 @@ obj
 .vscode
 dist
 .DS_Store
+.vs
+

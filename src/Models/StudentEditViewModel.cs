@@ -6,7 +6,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Workforce.Models;
 
 namespace Workforce.Models.ViewModels
@@ -16,14 +18,25 @@ namespace Workforce.Models.ViewModels
         public Student Student { get; set; }
 
         [Display(Name="Current Cohort")]
-        public List<SelectListItem> Cohorts { get; private set; }
+        public List<SelectListItem> Cohorts { get; }
+
+        private readonly IConfiguration _config;
+
+        public IDbConnection Connection {
+            get {
+                return new SqliteConnection (_config.GetConnectionString ("DefaultConnection"));
+            }
+        }
 
         public StudentEditViewModel() {}
-        public StudentEditViewModel(IDbConnection conn)
+
+        public StudentEditViewModel(IConfiguration config)
         {
+            _config = config;
+
             string sql = $@"SELECT Id, Name FROM Cohort";
 
-            using (conn) {
+            using (IDbConnection conn = Connection) {
                 List<Cohort> cohorts = (conn.Query<Cohort> (sql)).ToList();
 
                 this.Cohorts = cohorts
