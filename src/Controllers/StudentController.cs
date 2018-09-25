@@ -12,6 +12,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Workforce.Models;
 using Workforce.Models.ViewModels;
+using System.Data.SqlClient;
 
 namespace Workforce.Controllers {
     public class StudentController : Controller {
@@ -23,7 +24,7 @@ namespace Workforce.Controllers {
 
         public IDbConnection Connection {
             get {
-                return new SqliteConnection (_config.GetConnectionString ("DefaultConnection"));
+                return new SqlConnection (_config.GetConnectionString ("DefaultConnection"));
             }
         }
 
