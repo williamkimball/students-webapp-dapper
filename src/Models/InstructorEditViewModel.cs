@@ -13,9 +13,9 @@ using Workforce.Models;
 
 namespace Workforce.Models.ViewModels
 {
-    public class StudentEditViewModel
+    public class InstructorEditViewModel
     {
-        public Student Student { get; set; }
+        public Instructor Instructor { get; set; }
 
         [Display(Name="Current Cohort")]
         public List<SelectListItem> Cohorts { get; }
@@ -28,9 +28,9 @@ namespace Workforce.Models.ViewModels
             }
         }
 
-        public StudentEditViewModel() {}
+        public InstructorEditViewModel() {}
 
-        public StudentEditViewModel(IConfiguration config)
+        public InstructorEditViewModel(IConfiguration config)
         {
             _config = config;
 
